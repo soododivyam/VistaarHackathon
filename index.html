@@ -1,44 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive PDF Reader</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
-    <link rel="stylesheet" href="styles.css"> </head>
-<body class="bg-gray-100 flex flex-col h-screen overflow-hidden">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Viewer with Upload</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="toolbar">
+    <input type="file" id="file-input" accept="application/pdf">
+    <button id="prev">Prev</button>
+    <span>Page: <span id="page_num"></span> / <span id="page_count"></span></span>
+    <button id="next">Next</button>
+  </div>
 
-    <header class="bg-white p-4 shadow-md flex justify-between items-center">
-        <h1 class="text-xl font-bold">PDF Viewer</h1>
-        <input type="file" id="pdf-upload" accept=".pdf" class="p-2 border rounded-md">
-    </header>
+  <div class="pdf-container">
+    <canvas id="the-canvas"></canvas>
+  </div>
 
-    <main class="flex-grow flex flex-col items-center p-4 overflow-y-auto">
-        
-        <div id="pdf-loading-message" class="text-lg text-gray-600 hidden">Loading PDF...</div>
-
-        <div id="pdf-viewer-container" class="relative shadow-xl border border-gray-300 bg-white" style="margin-bottom: 20px;">
-            <canvas id="pdf-canvas" class="block"></canvas>
-            <div id="pdf-text-layer" class="textLayer absolute top-0 left-0" style="position: absolute;"></div>
-            <div id="pdf-render-area" class="hidden"></div> 
-        </div>
-
-        <div id="pdf-pagination-controls" class="flex items-center space-x-4 p-3 bg-white shadow-lg rounded-lg">
-            <button id="prev-page" class="px-4 py-2 bg-blue-500 text-white rounded-md disabled:bg-gray-400" disabled>&larr; Previous</button>
-            <span class="text-lg font-semibold">
-                Page <span id="current-page-num">0</span> of <span id="total-page-num">0</span>
-            </span>
-            <button id="next-page" class="px-4 py-2 bg-blue-500 text-white rounded-md disabled:bg-gray-400" disabled>Next &rarr;</button>
-        </div>
-
-    </main>
-
-    <div id="context-menu" class="hidden absolute z-50 bg-white shadow-lg rounded-md overflow-hidden border border-gray-200">
-        <button id="explain-button" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Explain This</button>
-        <button id="ask-button" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Ask About This</button>
-    </div>
-
-    <script src="script.js"></script> </body>
+  <!-- pdf.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+  <script src="script.js"></script>
+</body>
 </html>
+

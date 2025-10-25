@@ -1,127 +1,66 @@
-// Global variables
-let pdfDoc = null;
-let currentPageNum = 1;
-let isRendering = false;
+let pdfDoc = null,
+    pageNum = 1,
+    scale = 1.5,
+    canvas = document.getElementById("the-canvas"),
+    ctx = canvas.getContext("2d");
 
-// **CRITICAL FIX: Initialize PDF.js Worker**
-// The workerSrc is required to load and parse PDFs.
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+// pdf.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
 
-// DOM elements
-const fileInput = document.getElementById('pdf-upload');
-const pdfContainer = document.getElementById('pdf-viewer-container');
-const renderArea = document.getElementById('pdf-render-area'); // This is not strictly used for display, but kept for consistency
-const canvas = document.getElementById('pdf-canvas');
-const textLayerDiv = document.getElementById('pdf-text-layer');
-const ctx = canvas.getContext('2d');
-const prevPageBtn = document.getElementById('prev-page');
-const nextPageBtn = document.getElementById('next-page');
-const currentPageEl = document.getElementById('current-page-num');
-const totalPageEl = document.getElementById('total-page-num');
-const paginationControls = document.getElementById('pdf-pagination-controls');
-const loadingMessage = document.getElementById('pdf-loading-message');
+// Render page
+function renderPage(num) {
+  pdfDoc.getPage(num).then((page) => {
+    const viewport = page.getViewport({ scale });
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
 
-// Event Listeners
-fileInput.addEventListener('change', loadPdf);
-prevPageBtn.addEventListener('click', () => changePage(-1));
-nextPageBtn.addEventListener('click', () => changePage(1));
-
-function loadPdf(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Reset state
-    pdfDoc = null;
-    currentPageNum = 1;
-    pdfContainer.classList.add('hidden');
-    paginationControls.classList.add('hidden');
-    loadingMessage.classList.remove('hidden');
-    
-    const reader = new FileReader();
-
-    reader.onload = function(e) {
-        const arrayBuffer = e.target.result;
-        pdfjsLib.getDocument({data: arrayBuffer}).promise.then(pdf => {
-            pdfDoc = pdf;
-            loadingMessage.classList.add('hidden');
-            pdfContainer.classList.remove('hidden');
-            paginationControls.classList.remove('hidden');
-            renderPage(currentPageNum);
-        }).catch(error => {
-            console.error('Error loading PDF:', error);
-            loadingMessage.textContent = 'Error loading PDF: ' + error.message;
-        });
+    const renderContext = {
+      canvasContext: ctx,
+      viewport: viewport,
     };
-
-    reader.readAsArrayBuffer(file);
+    page.render(renderContext);
+    document.getElementById("page_num").textContent = num;
+  });
 }
 
-function renderPage(pageNum) {
-    if (isRendering || !pdfDoc) return;
-    isRendering = true;
-    
-    // Clear previous text layer content to prevent overlap
-    while (textLayerDiv.firstChild) {
-        textLayerDiv.removeChild(textLayerDiv.firstChild);
-    }
+// Previous page
+function onPrevPage() {
+  if (pageNum <= 1) return;
+  pageNum--;
+  renderPage(pageNum);
+}
 
-    pdfDoc.getPage(pageNum).then(page => {
-        const scale = 1.5;
-        const viewport = page.getViewport({ scale });
+// Next page
+function onNextPage() {
+  if (pageNum >= pdfDoc.numPages) return;
+  pageNum++;
+  renderPage(pageNum);
+}
 
-        // Set dimensions for both canvas and text layer container
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-        textLayerDiv.style.height = `${viewport.height}px`;
-        textLayerDiv.style.width = `${viewport.width}px`;
-        
-        const renderContext = {
-            canvasContext: ctx,
-            viewport: viewport
-        };
+// Event listeners
+document.getElementById("prev").addEventListener("click", onPrevPage);
+document.getElementById("next").addEventListener("click", onNextPage);
 
-        page.render(renderContext).promise.then(() => {
-            renderTextLayer(page, viewport);
-            isRendering = false;
-        });
+// File upload
+document.getElementById("file-input").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (file.type !== "application/pdf") {
+    alert("Please upload a PDF file.");
+    return;
+  }
 
-        currentPageNum = pageNum;
-        currentPageEl.textContent = currentPageNum;
-        totalPageEl.textContent = pdfDoc.numPages;
+  const fileReader = new FileReader();
+  fileReader.onload = function() {
+    const typedarray = new Uint8Array(this.result);
 
-        // Handle button states
-        prevPageBtn.disabled = currentPageNum <= 1;
-        nextPageBtn.disabled = currentPageNum >= pdfDoc.numPages;
+    pdfjsLib.getDocument(typedarray).promise.then((pdfDoc_) => {
+      pdfDoc = pdfDoc_;
+      pageNum = 1;
+      document.getElementById("page_count").textContent = pdfDoc.numPages;
+      renderPage(pageNum);
     });
-}
+  };
+  fileReader.readAsArrayBuffer(file);
+});
 
-function renderTextLayer(page, viewport) {
-    page.getTextContent().then(textContent => {
-        // The clear operation is now done at the start of renderPage, but kept here for robustness
-        while (textLayerDiv.firstChild) {
-            textLayerDiv.removeChild(textLayerDiv.firstChild);
-        }
-
-        const textLayer = new pdfjsLib.TextLayerBuilder.TextLayerBuilder({ // Corrected class access
-            textLayerDiv,
-            pageIndex: page.pageIndex,
-            viewport: viewport
-        });
-
-        textLayer.setTextContent(textContent);
-        textLayer.render();
-    });
-}
-
-function changePage(offset) {
-    const newPageNum = currentPageNum + offset;
-    if (newPageNum > 0 && newPageNum <= pdfDoc.numPages) {
-        renderPage(newPageNum);
-    }
-}
-
-// Mocked AI response function (kept from original)
-function getMockedAIResponse(question) {
-    const mockedResponse = "This is a mock response for the question: " + question;
-    return mockedResponse;
-}
