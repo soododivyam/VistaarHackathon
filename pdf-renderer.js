@@ -65,13 +65,17 @@ const PDFViewer = {
       this.hideContextMenu();
     });
 
-    document.getElementById("menu-quiz").addEventListener("click", () => {
-      if (this.selectedText) {
-        // Call the public method on the Chat object
-        Chat.sendMessageWithContext(this.selectedText, "Quiz me on this text:");
-      }
-      this.hideContextMenu();
-    });
+  // --- OPEN QUIZ PAGE ---
+  document.getElementById("menu-quiz").addEventListener("click", () => {
+    if (this.selectedText) {
+      // Save selected text temporarily in localStorage
+      localStorage.setItem("quizText", this.selectedText);
+      // Open quiz page
+      window.open("quiz.html", "_blank");
+    }
+    this.hideContextMenu();
+  });
+
   },
 
   /**
