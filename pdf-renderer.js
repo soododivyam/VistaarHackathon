@@ -22,6 +22,10 @@ const PDFViewer = {
   viewportWrapper: null,
   textLayerDiv: null, // A reference to the text layer
 
+  // --- New properties for context menu ---
+  selectedText: null,
+  contextMenu: null,
+
   /**
    * Initializes the PDF viewer object.
    * @param {string} canvasId - The ID of the canvas element.
@@ -35,6 +39,39 @@ const PDFViewer = {
     this.pageCounter = document.getElementById(pageNumId);
     this.pageTotal = document.getElementById(pageCountId);
     this.viewportWrapper = document.getElementById(wrapperId);
+
+    // --- New: Get menu element and attach listeners ---
+    this.contextMenu = document.getElementById("text-context-menu");
+
+    // 1. Listen for right-click *inside* the PDF wrapper
+    this.viewportWrapper.addEventListener("contextmenu", (e) =>
+      this.handleContextMenu(e)
+    );
+
+    // 2. Listen for left-click *anywhere* to close the menu
+    window.addEventListener("click", (e) => {
+      // Only hide if the click is *not* on a menu button
+      if (!e.target.classList.contains('menu-button')) {
+        this.hideContextMenu();
+      }
+    });
+
+    // 3. Add listeners for menu buttons
+    document.getElementById("menu-explain").addEventListener("click", () => {
+      if (this.selectedText) {
+        // Call the public method on the Chat object
+        Chat.sendMessageWithContext(this.selectedText, "Please explain this text:");
+      }
+      this.hideContextMenu();
+    });
+
+    document.getElementById("menu-quiz").addEventListener("click", () => {
+      if (this.selectedText) {
+        // Call the public method on the Chat object
+        Chat.sendMessageWithContext(this.selectedText, "Quiz me on this text:");
+      }
+      this.hideContextMenu();
+    });
   },
 
   /**
@@ -66,7 +103,7 @@ const PDFViewer = {
     // Get the page
     this.pdfDoc.getPage(num).then((page) => {
       const viewport = page.getViewport({ scale: this.scale });
-      
+
       // --- 1. Render Canvas ---
       this.canvas.height = viewport.height;
       this.canvas.width = viewport.width;
@@ -75,9 +112,9 @@ const PDFViewer = {
         canvasContext: this.ctx,
         viewport: viewport,
       };
-      
+
       const renderTask = page.render(renderContext);
-      
+
       // --- 2. Render selectable text layer using textlayer.js ---
       renderTask.promise.then(() => {
         renderTextLayer(page, this.viewportWrapper, this.canvas, this.scale);
@@ -112,7 +149,41 @@ const PDFViewer = {
   toggleDarkMode() {
     this.viewportWrapper.classList.toggle("pdf-dark-mode");
   },
+
+  // --- New Methods for Context Menu ---
+
+  /**
+   * Handles the right-click event on the PDF wrapper.
+   * @param {MouseEvent} e
+   */
+  handleContextMenu(e) {
+    // Stop the default browser right-click menu
+    e.preventDefault();
+
+    const selection = window.getSelection();
+    const selectedText = selection.toString().trim();
+
+    if (selectedText.length > 0) {
+      this.selectedText = selectedText;
+
+      // Position and show the menu
+      // We use clientX/Y for position relative to the viewport
+      this.contextMenu.style.top = `${e.clientY}px`;
+      this.contextMenu.style.left = `${e.clientX}px`;
+      this.contextMenu.style.display = "block";
+    } else {
+      // If no text is selected, just hide the menu
+      this.hideContextMenu();
+    }
+  },
+
+  /**
+   * Hides the custom context menu and clears selection.
+   */
+  hideContextMenu() {
+    if (this.contextMenu) {
+        this.contextMenu.style.display = "none";
+    }
+    this.selectedText = null;
+  },
 };
-
-
-

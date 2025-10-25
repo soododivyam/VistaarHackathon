@@ -133,4 +133,12 @@
   border-radius: 20px;
 }
 
-
+/* --- New Context Message Style --- */
+.chat-message.context-message {
+  font-style: italic;
+  opacity: 0.9;
+  font-size: 0.9em;
+  background-color: var(--chat-message-bot-bg); /* Use bot bg for neutrality */
+  align-self: flex-start; /* Align left */
+  border-bottom-left-radius: 4px;
+}

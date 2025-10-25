@@ -5,12 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PDF Viewer with Chat</title>
   
-  <!-- Link all CSS files. Order is important! -->
   <link rel="stylesheet" href="theme.css">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="chat.css">
 
-  <!-- pdf.js text layer CSS (REQUIRED for selectable text) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf_viewer.css">
 
 </head>
@@ -22,27 +20,19 @@
     <span>Page: <span id="page_num"></span> / <span id="page_count"></span></span>
     <button id="next">Next</button>
     <button id="dark-mode-toggle">Toggle UI Mode</button>
-    <!-- New Decoupled PDF Dark Mode Button -->
     <button id="pdf-dark-mode-toggle">Toggle PDF Mode</button>
   </div>
 
   <div class="pdf-container">
-    <!-- 
-      New wrapper for canvas and text layer. 
-      This is required for positioning the text over the canvas.
-    -->
-      <div id="pdf-viewport-wrapper" style="position: relative;">
+    <div id="pdf-viewport-wrapper" style="position: relative;">
       <canvas id="the-canvas"></canvas>
-      <!-- The text layer will be inserted here by pdf-renderer.js -->
-    </div>
+      </div>
   </div>
 
-  <!-- Chat Dongle -->
   <button id="chat-toggle">
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
   </button>
 
-  <!-- Chat Window (hidden by default) -->
   <div id="chat-window">
     <div class="chat-header">
       <span>Chat Support</span>
@@ -59,17 +49,17 @@
     </div>
   </div>
 
+  <div id="text-context-menu" class="context-menu">
+    <button id="menu-explain" class="menu-button">Explain Text</button>
+    <button id="menu-quiz" class="menu-button">Quiz Me</button>
+  </div>
 
-  <!-- pdf.js CDN -->
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
   
   <script src="textlayer.js"></script> 
 
-  <!-- New Script Order: Logic first, then UI controls -->
-  <script src="pdf-renderer.js"></script> 
+  <script src="chat.js"></script>         <script src="pdf-renderer.js"></script> 
   <script src="script.js"></script>         
-  <script src="chat.js"></script>        
 </body>
 </html>
-
-
