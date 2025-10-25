@@ -3,24 +3,50 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PDF Viewer with Upload</title>
+  <title>PDF Viewer with Chat</title>
+  
+  <link rel="stylesheet" href="theme.css">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="chat.css">
+
 </head>
 <body>
+
   <div class="toolbar">
     <input type="file" id="file-input" accept="application/pdf">
     <button id="prev">Prev</button>
     <span>Page: <span id="page_num"></span> / <span id="page_count"></span></span>
     <button id="next">Next</button>
+    <button id="dark-mode-toggle">Toggle Mode</button>
   </div>
 
   <div class="pdf-container">
     <canvas id="the-canvas"></canvas>
   </div>
 
-  <!-- pdf.js CDN -->
+  <button id="chat-toggle">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+  </button>
+
+  <div id="chat-window">
+    <div class="chat-header">
+      <span>Chat Support</span>
+      <button id="chat-close">&times;</button>
+    </div>
+    <div id="chat-body">
+      <div class="chat-message bot">
+        Hello! How can I help you today?
+      </div>
+    </div>
+    <div class="chat-footer">
+      <input type="text" id="chat-input" placeholder="Type a message...">
+      <button id="chat-send">Send</button>
+    </div>
+  </div>
+
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
   <script src="script.js"></script>
+  <script src="chat.js"></script>
 </body>
 </html>
-
