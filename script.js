@@ -1,66 +1,50 @@
-let pdfDoc = null,
-    pageNum = 1,
-    scale = 1.5,
-    canvas = document.getElementById("the-canvas"),
-    ctx = canvas.getContext("2d");
+/**
+ * script.js
+ *
+ * This file acts as the main UI controller.
+ * It initializes the PDFViewer and connects the HTML buttons
+ * to the PDFViewer's functions.
+ */
 
-// pdf.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+// Wait for the DOM to be fully loaded
+document.addEventListener("DOMContentLoaded", () => {
+  // Initialize the PDFViewer object
+  // It needs the IDs of all the elements it will control
+  PDFViewer.init(
+    "the-canvas",
+    "page_num",
+    "page_count",
+    "pdf-viewport-wrapper"
+  );
 
-// Render page
-function renderPage(num) {
-  pdfDoc.getPage(num).then((page) => {
-    const viewport = page.getViewport({ scale });
-    canvas.height = viewport.height;
-    canvas.width = viewport.width;
+  // --- Event Listeners for PDF Controls ---
 
-    const renderContext = {
-      canvasContext: ctx,
-      viewport: viewport,
-    };
-    page.render(renderContext);
-    document.getElementById("page_num").textContent = num;
+  // Handle file upload
+  document.getElementById("file-input").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (file && file.type === "application/pdf") {
+      PDFViewer.loadDocument(file);
+    } else if (file) {
+      // You can replace this with a nicer UI element
+      console.error("Please upload a PDF file.");
+    }
   });
-}
 
-// Previous page
-function onPrevPage() {
-  if (pageNum <= 1) return;
-  pageNum--;
-  renderPage(pageNum);
-}
+  // Handle "Previous" button
+  document.getElementById("prev").addEventListener("click", () => {
+    PDFViewer.prevPage();
+  });
 
-// Next page
-function onNextPage() {
-  if (pageNum >= pdfDoc.numPages) return;
-  pageNum++;
-  renderPage(pageNum);
-}
+  // Handle "Next" button
+  document.getElementById("next").addEventListener("click", () => {
+    PDFViewer.nextPage();
+  });
 
-// Event listeners
-document.getElementById("prev").addEventListener("click", onPrevPage);
-document.getElementById("next").addEventListener("click", onNextPage);
-
-// File upload
-document.getElementById("file-input").addEventListener("change", (e) => {
-  const file = e.target.files[0];
-  if (file.type !== "application/pdf") {
-    alert("Please upload a PDF file.");
-    return;
-  }
-
-  const fileReader = new FileReader();
-  fileReader.onload = function() {
-    const typedarray = new Uint8Array(this.result);
-
-    pdfjsLib.getDocument(typedarray).promise.then((pdfDoc_) => {
-      pdfDoc = pdfDoc_;
-      pageNum = 1;
-      document.getElementById("page_count").textContent = pdfDoc.numPages;
-      renderPage(pageNum);
-    });
-  };
-  fileReader.readAsArrayBuffer(file);
+  // Handle "Toggle PDF Mode" button
+  document.getElementById("pdf-dark-mode-toggle").addEventListener("click", () => {
+      PDFViewer.toggleDarkMode();
+    }
+  );
 });
+
 
