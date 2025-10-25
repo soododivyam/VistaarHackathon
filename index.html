@@ -31,7 +31,7 @@
       New wrapper for canvas and text layer. 
       This is required for positioning the text over the canvas.
     -->
-    <div id="pdf-viewport-wrapper">
+      <div id="pdf-viewport-wrapper" style="position: relative;">
       <canvas id="the-canvas"></canvas>
       <!-- The text layer will be inserted here by pdf-renderer.js -->
     </div>
@@ -63,10 +63,12 @@
   <!-- pdf.js CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
   
+  <script src="textlayer.js"></script> 
+
   <!-- New Script Order: Logic first, then UI controls -->
   <script src="pdf-renderer.js"></script> 
   <script src="script.js"></script>         
-  <script src="chat.js"></script>           
+  <script src="chat.js"></script>        
 </body>
 </html>
 

@@ -78,33 +78,9 @@ const PDFViewer = {
       
       const renderTask = page.render(renderContext);
       
+      // --- 2. Render selectable text layer using textlayer.js ---
       renderTask.promise.then(() => {
-        // --- 2. Render Text Layer (After canvas is done) ---
-        return page.getTextContent();
-      }).then((textContent) => {
-        // Remove old text layer if it exists
-        if (this.textLayerDiv) {
-          this.textLayerDiv.remove();
-        }
-
-        // Create new text layer div
-        this.textLayerDiv = document.createElement("div");
-        this.textLayerDiv.className = "textLayer";
-        
-        // Set its size to match the viewport
-        this.textLayerDiv.style.width = `${viewport.width}px`;
-        this.textLayerDiv.style.height = `${viewport.height}px`;
-
-        // Append new layer to the wrapper
-        this.viewportWrapper.appendChild(this.textLayerDiv);
-
-        // Render the text content into the layer
-        pdfjsLib.renderTextLayer({
-          textContentSource: textContent,
-          container: this.textLayerDiv,
-          viewport: viewport,
-          textDivs: [],
-        });
+        renderTextLayer(page, this.viewportWrapper, this.canvas, this.scale);
       });
 
       // Update page counter
@@ -137,5 +113,6 @@ const PDFViewer = {
     this.viewportWrapper.classList.toggle("pdf-dark-mode");
   },
 };
+
 
 
