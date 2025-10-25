@@ -14,6 +14,13 @@
   font-size: 1.5rem;
   z-index: 1000;
   box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  /* Use the button variable from theme.css */
+  background-color: var(--button-bg);
+  color: var(--toolbar-text); /* Re-using toolbar text color */
+}
+
+#chat-toggle:hover {
+  background-color: var(--button-hover-bg);
 }
 
 #chat-toggle svg {
@@ -125,3 +132,5 @@
   width: 70px;
   border-radius: 20px;
 }
+
+

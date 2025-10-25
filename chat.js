@@ -1,11 +1,20 @@
+/**
+ * chat.js
+ *
+ * This file contains all the logic for the chat widget
+ * and the main UI (body) dark mode toggle.
+ */
+
 // Wait for the DOM to be fully loaded before running scripts
 document.addEventListener("DOMContentLoaded", () => {
   
-  // --- Dark Mode Toggle ---
+  // --- Main UI Dark Mode Toggle ---
   const darkModeToggle = document.getElementById("dark-mode-toggle");
-  darkModeToggle.addEventListener("click", () => {
-    document.body.classList.toggle("dark-mode");
-  });
+  if (darkModeToggle) {
+    darkModeToggle.addEventListener("click", () => {
+      document.body.classList.toggle("dark-mode");
+    });
+  }
 
   // --- Chat Widget ---
   const chatToggle = document.getElementById("chat-toggle");
@@ -14,6 +23,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const chatBody = document.getElementById("chat-body");
   const chatInput = document.getElementById("chat-input");
   const chatSend = document.getElementById("chat-send");
+
+  // Safety check in case elements don't exist
+  if (!chatToggle || !chatWindow || !chatClose || !chatBody || !chatInput || !chatSend) {
+    console.warn("Chat elements not found. Chat widget will not be initialized.");
+    return;
+  }
 
   // Open/Close chat window
   chatToggle.addEventListener("click", () => {
@@ -43,6 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const addMessage = (text, sender) => {
     const messageEl = document.createElement("div");
     messageEl.classList.add("chat-message", sender);
+    // Use textContent to prevent XSS
     messageEl.textContent = text;
     chatBody.appendChild(messageEl);
 
@@ -53,7 +69,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Simulate a bot response
   const getBotResponse = () => {
     setTimeout(() => {
-      addMessage("This is a dummy response. The API is not connected yet.", "bot");
+      addMessage(
+        "This is a dummy response. The API is not connected yet.",
+        "bot"
+      );
     }, 1000); // 1-second delay
   };
 
@@ -64,5 +83,6 @@ document.addEventListener("DOMContentLoaded", () => {
       sendMessage();
     }
   });
-
 });
+
+
