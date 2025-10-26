@@ -73,3 +73,40 @@ button:hover {
 #back-btn:hover {
   background: #333;
 }
+
+#quiz-setup {
+  text-align: left;
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+#quiz-setup label {
+  font-weight: 600;
+  margin-top: 10px;
+  display: block;
+}
+
+#quiz-setup select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  margin-top: 5px;
+}
+
+#start-quiz {
+  margin-top: 15px;
+  width: 100%;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#start-quiz:hover {
+  background-color: #0056b3;
+}
