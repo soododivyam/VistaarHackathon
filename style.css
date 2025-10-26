@@ -1,0 +1,117 @@
+/* --- Original Styles (Refactored) --- */
+body {
+  font-family: sans-serif;
+  margin: 0;
+  background-color: var(--page-bg);
+  color: var(--page-text);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  background: var(--toolbar-bg);
+  color: var(--toolbar-text);
+  padding: 10px;
+  transition: background-color 0.3s;
+}
+
+input[type="file"] {
+  padding: 5px;
+}
+
+button {
+  padding: 6px 12px;
+  border: none;
+  background: var(--button-bg);
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background: var(--button-hover-bg);
+}
+
+.pdf-container {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+canvas {
+  /* This styling is now applied to the canvas element itself */
+  border: 1px solid var(--canvas-border);
+  background: var(--canvas-bg);
+  display: block; /* Important for layout */
+  transition: background-color 0.3s, border-color 0.3s, filter 0.3s;
+}
+
+/* --- New PDF Wrapper & Text Layer Styles --- */
+
+/* This wrapper is the new positioning context for the 
+  canvas and the text layer.
+*/
+#pdf-viewport-wrapper {
+  position: relative;
+  border-radius: 8px; /* Apply border radius to the wrapper */
+  overflow: hidden; /* Ensures filter clips properly */
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  line-height: 1; /* Fixes layout issues */
+}
+
+/* The .textLayer class comes from pdf.js.
+  These rules place it directly on top of the canvas.
+*/
+.textLayer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  color: transparent; /* Text is invisible, but selectable */
+  transition: filter 0.3s;
+}
+
+/* --- New Decoupled PDF Dark Mode Class --- */
+
+/* This class is toggled by JS and is independent 
+  of the main body.dark-mode theme.
+  It targets both the canvas AND the text layer.
+*/
+#pdf-viewport-wrapper.pdf-dark-mode canvas,
+#pdf-viewport-wrapper.pdf-dark-mode .textLayer {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* --- Custom Context Menu Styles --- */
+.context-menu {
+  display: none; /* Hidden by default */
+  position: absolute;
+  z-index: 1000;
+  background-color: var(--chat-window-bg);
+  border: 1px solid var(--canvas-border);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  padding: 5px 0;
+}
+
+.menu-button {
+  display: block;
+  width: 100%;
+  padding: 8px 15px;
+  background: none;
+  border: none;
+  color: var(--page-text);
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.menu-button:hover {
+  background-color: var(--chat-message-bot-bg);
+}

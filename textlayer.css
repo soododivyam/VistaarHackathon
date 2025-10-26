@@ -1,0 +1,15 @@
+/* Text Layer CSS - for selectable text in PDF */
+.textLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: auto; /* allow selection */
+  user-select: text;    /* allow text selection */
+  color: transparent;   /* text is invisible but selectable */
+  font-family: sans-serif;
+}
+
+.textLayer div {
+  white-space: pre;
+  color: transparent;   /* selectable text but not visible */
+}

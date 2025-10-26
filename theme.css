@@ -1,0 +1,41 @@
+/* --- Root: Light Mode (Default) --- */
+:root {
+  --page-bg: #f0f0f0;
+  --page-text: #111;
+  --toolbar-bg: #333;
+  --toolbar-text: white;
+  --button-bg: #007bff;
+  --button-hover-bg: #0056b3;
+  --canvas-bg: white;
+  --canvas-border: #ccc;
+  
+  /* Chat Variables */
+  --chat-window-bg: #ffffff;
+  --chat-header-bg: #007bff;
+  --chat-header-text: #ffffff;
+  --chat-message-bot-bg: #f1f1f1;
+  --chat-message-user-bg: #dcf8c6;
+  --chat-input-bg: #f9f9f9;
+}
+
+/* --- Dark Mode --- */
+body.dark-mode {
+  --page-bg: #121212;
+  --page-text: #eee;
+  --toolbar-bg: #1e1e1e;
+  --toolbar-text: #eee;
+  --button-bg: #0056b3;
+  --button-hover-bg: #003d80;
+  --canvas-bg: #2a2a2a;
+  --canvas-border: #444;
+
+  /* Chat Variables (Dark) */
+  --chat-window-bg: #2a2a2a;
+  --chat-header-bg: #0056b3;
+  --chat-header-text: #e0e0e0;
+  --chat-message-bot-bg: #333;
+  --chat-message-user-bg: #056162;
+  --chat-input-bg: #3c3c3c;
+}
+
+
