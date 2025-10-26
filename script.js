@@ -20,6 +20,33 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Event Listeners for PDF Controls ---
 
   // Handle file upload
+  // Automatic PDF upload to backend
+document.getElementById("file-input").addEventListener("change", async (event) => {
+    const file = event.target.files[0];
+
+    if (!file) return; // No file selected
+
+    // Send file to backend
+    const formData = new FormData();
+    formData.append("pdf_file", file);
+
+    try {
+        const response = await fetch("http://localhost:5000/upload_pdf", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+        if (data.message) {
+            console.log(data.message);
+        } else if (data.error) {
+            console.error(data.error);
+        }
+    } catch (err) {
+        console.error("Failed to send PDF to backend:", err);
+    }
+});
+
   document.getElementById("file-input").addEventListener("change", (e) => {
     const file = e.target.files[0];
     if (file && file.type === "application/pdf") {
@@ -45,6 +72,14 @@ document.addEventListener("DOMContentLoaded", () => {
       PDFViewer.toggleDarkMode();
     }
   );
+
+  document.getElementById("zoom-in").addEventListener("click", () => {
+    PDFViewer.zoomIn();
+  });
+
+  document.getElementById("zoom-out").addEventListener("click", () => {
+    PDFViewer.zoomOut();
+  });
 });
 
 

@@ -8,53 +8,87 @@ from langchain_huggingface import HuggingFaceEmbeddings, ChatHuggingFace, Huggin
 from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import PromptTemplate
 
+from quiz_backend import register_quiz_routes
+
 # ===============================
 # Load everything once on startup
 # ===============================
 
 app = Flask(__name__)
+register_quiz_routes(app)
 CORS(app)
 
 # Your PDF file path
 
-os.environ["HUGGINGFACEHUB_API_TOKEN"] = "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"
+os.environ["HUGGINGFACEHUB_API_TOKEN"] = ""
 
-pdf_path = r"C:\Users\Shaurya Varshney\Desktop\pdf_reader\Notes.pdf"  # <<< put your PDF path here
+# ===============================
+# Upload folder & globals
+# ===============================
+UPLOAD_FOLDER = "uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-if not os.path.exists(pdf_path):
-    raise FileNotFoundError(f"PDF file not found at: {pdf_path}")
+pdf_pages = []          # Loaded pages from uploaded PDF
+pdf_vector_store = None # FAISS vector store accessible globally
+pdf_retriever = None
 
-print("Loading PDF and building environment...")
+# ===============================
+# PDF upload route
+# ===============================
+@app.route("/upload_pdf", methods=["POST"])
+def upload_pdf():
+    print("PDF found")
+    if "pdf_file" not in request.files:
+        return jsonify({"error": "No file part"}), 400
 
-loader = PyPDFLoader(pdf_path)
-pages = loader.load()
+    file = request.files["pdf_file"]
+    if file.filename == "":
+        return jsonify({"error": "No selected file"}), 400
 
-# Load or create chunks
-chunks_path = "chunks.pkl"
-if os.path.exists(chunks_path):
-    with open(chunks_path, "rb") as f:
-        chunks = pickle.load(f)
-else:
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=150)
-    chunks = splitter.split_documents(pages)
-    with open(chunks_path, "wb") as f:
-        pickle.dump(chunks, f)
+    if file and file.filename.endswith(".pdf"):
+        pdf_path = os.path.join(UPLOAD_FOLDER, file.filename)
+        file.save(pdf_path)
 
-# Embeddings and FAISS index
-hf = HuggingFaceEmbeddings(
-    model_name="sentence-transformers/all-mpnet-base-v2",
-    model_kwargs={"device": "cpu"},
-    encode_kwargs={"normalize_embeddings": True},
-)
+        # Load PDF pages
+        loader = PyPDFLoader(pdf_path)
+        pages = loader.load()
 
-index_path = "my_faiss_index"
-if os.path.exists(index_path):
-    vector_store = FAISS.load_local(index_path, hf, allow_dangerous_deserialization=True)
-else:
-    vector_store = FAISS.from_documents(chunks, hf)
-    vector_store.save_local(index_path)
+        if not pages:
+            return jsonify({"error": "PDF is empty"}), 400
 
-retriever = vector_store.as_retriever(search_type="mmr", search_kwargs={"k": 3})
+        # Split pages into chunks and pickle
+        print("PDF_found_2")
+        splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=150)
+        chunks = splitter.split_documents(pages)
+        with open("chunks.pkl", "wb") as f:
+            pickle.dump(chunks, f)
+
+        if not chunks:
+            return jsonify({"error": "No text found in PDF"}), 400
+
+        # Create embeddings and FAISS vector store
+        hf = HuggingFaceEmbeddings(
+            model_name="sentence-transformers/all-mpnet-base-v2",
+            model_kwargs={"device": "cpu"},
+            encode_kwargs={"normalize_embeddings": True},
+        )
+        vector_store = FAISS.from_documents(chunks, hf)
+        vector_store.save_local("my_faiss_index")
+        retriever = vector_store.as_retriever(search_type="mmr", search_kwargs={"k": 3})
+
+        # Store globally so chatbot can access
+        global pdf_pages, pdf_vector_store, pdf_retriever
+        pdf_pages = pages
+        pdf_vector_store = vector_store
+        pdf_retriever = retriever
+        print("PDF found + retriever made")
+        os.remove("chat_history.pkl")
+
+        return jsonify({
+            "message": f"PDF uploaded! Pages: {len(pages)}, Chunks: {len(chunks)}"
+        })
+
+    return jsonify({"error": "Invalid file type"}), 400
 
 # Load LLM
 llm = HuggingFaceEndpoint(
@@ -105,7 +139,7 @@ def ask():
     chat_history.append({"role": "user", "content": prompt+str(context_text)})
 
     # Retrieve relevant docs
-    retrieved_docs = retriever.invoke(prompt+str(context_text))
+    retrieved_docs = pdf_retriever.invoke(prompt+str(context_text))
     retrieved_context = "\n\n".join(doc.page_content for doc in retrieved_docs)
 
     # Merge with frontend-sent context (optional)
@@ -135,4 +169,4 @@ def ask():
 
 if __name__ == "__main__":
     print("Starting Flask AI server on http://127.0.0.1:5000")
-    app.run(port=5000, debug=True)
+    app.run(port=5000, debug=True, use_reloader=False)

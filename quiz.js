@@ -1,35 +1,89 @@
-/**
- * quiz.js
- * Handles generation and display of quizzes from selected text.
- */
-
 document.addEventListener("DOMContentLoaded", () => {
+  const setupDiv = document.getElementById("quiz-setup");
   const quizContainer = document.getElementById("quiz-content");
   const backBtn = document.getElementById("back-btn");
+  const startBtn = document.getElementById("start-quiz");
 
-  // Retrieve text from localStorage
   const text = localStorage.getItem("quizText");
 
   if (!text) {
     quizContainer.innerHTML = "<p class='error'>No text found for quiz generation.</p>";
+    setupDiv.style.display = "none";
+    quizContainer.style.display = "block";
     return;
   }
 
-  // Generate a simple quiz
-  const questions = generateQuizQuestions(text);
+  startBtn.addEventListener("click", async () => {
+    const count = parseInt(document.getElementById("question-count").value);
+    const type = "MCQ"; // fixed for now
+
+    setupDiv.style.display = "none";
+    quizContainer.style.display = "block";
+
+    // Fetch quiz questions from backend
+    const questions = await getQuizQuestions(text, count, type);
+
+    if (questions.length === 0) {
+      quizContainer.innerHTML = "<p class='error'>Failed to generate quiz questions.</p>";
+      return;
+    }
+
+    renderQuiz(questions, text, count, type);
+  });
+
+  backBtn.addEventListener("click", () => {
+    window.close();
+  });
+});
+
+/**
+ * Async function to call Flask endpoint and get LLM-generated MCQs
+ */
+async function getQuizQuestions(text, count, type = "MCQ") {
+  try {
+    const quizContainer = document.getElementById("quiz-content");
+    const tempMessage = document.createElement("div");
+    tempMessage.classList.add("quiz-message");
+    tempMessage.textContent = "Generating quiz questions...";
+    quizContainer.appendChild(tempMessage);
+    quizContainer.scrollTop = quizContainer.scrollHeight;
+
+    const response = await fetch("http://127.0.0.1:5000/generate_quiz", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, count, type }),
+    });
+
+    const data = await response.json();
+    console.log("Prompt is:",{text});
+
+    tempMessage.remove();
+
+    return data.questions || [];
+  } catch (err) {
+    console.error("Error fetching quiz questions:", err);
+    return [];
+  }
+}
+
+/**
+ * Render MCQs in the DOM and handle scoring
+ */
+function renderQuiz(questions, text, count, type) {
+  const quizContainer = document.getElementById("quiz-content");
 
   quizContainer.innerHTML = `
     <div class="selected-text">
       <h2>Selected Text:</h2>
       <p>${text}</p>
     </div>
-    <h2>Quiz</h2>
+    <h2>Quiz (${count} MCQs)</h2>
     <form id="quiz-form">
       ${questions
         .map(
           (q, i) => `
         <div class="quiz-question">
-          <p>${i + 1}. ${q.question}</p>
+          <p>${i + 1}. ${q.question_text}</p>
           ${q.options
             .map(
               (opt, j) => `
@@ -49,39 +103,34 @@ document.addEventListener("DOMContentLoaded", () => {
     <div id="result"></div>
   `;
 
-  // Handle form submission
   document.getElementById("quiz-form").addEventListener("submit", (e) => {
     e.preventDefault();
     const result = document.getElementById("result");
-    result.innerHTML = "<p>✅ Quiz submitted! Great job reviewing.</p>";
-  });
+    let score = 0;
 
-  // Go back
-  backBtn.addEventListener("click", () => {
-    window.close();
-  });
-});
+    questions.forEach((q, i) => {
+      const options = document.querySelectorAll(`input[name="q${i}"]`);
+      const selected = document.querySelector(`input[name="q${i}"]:checked`);
 
-/**
- * Generates simple quiz questions based on input text.
- * @param {string} text - The selected text from the PDF.
- * @returns {Array} - Array of question objects.
- */
-function generateQuizQuestions(text) {
-  // Dummy logic for now — could be replaced with AI later
-  const words = text.split(" ").slice(0, 20).join(" ");
-  return [
-    {
-      question: "What is the main topic discussed in the text?",
-      options: ["Technology", "Science", "History", "Other"],
-    },
-    {
-      question: "What best describes the tone of the text?",
-      options: ["Informative", "Persuasive", "Narrative", "Analytical"],
-    },
-    {
-      question: "What could be the main purpose of this text?",
-      options: ["To inform", "To entertain", "To criticize", "To explain"],
-    },
-  ];
+      options.forEach((opt) => {
+        const label = opt.parentElement;
+
+        // Highlight correct answer
+        if (opt.value === q.correct_answer) {
+          label.style.backgroundColor = "lightgreen";
+        } 
+        // Highlight wrong selection
+        if (selected && selected.value === opt.value && opt.value !== q.correct_answer) {
+          label.style.backgroundColor = "salmon";
+        }
+
+        // Disable all options after submit
+        opt.disabled = true;
+      });
+
+      if (selected && selected.value === q.correct_answer) score++;
+    });
+
+    result.innerHTML = `<p>You got ${score} out of ${questions.length} correct!</p>`;
+  });
 }
