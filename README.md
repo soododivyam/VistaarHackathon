@@ -21,14 +21,13 @@ This project leverages **Retrieval-Augmented Generation (RAG)** and **LangChain*
 
 | Layer | Technology |
 |-------|-------------|
-| Backend | Python, LangChain, FastAPI / Flask |
+| Backend | Python, LangChain, Flask |
 | Frontend | HTML, CSS, JavaScript |
-| AI / NLP | OpenAI API / Hugging Face / Llama models |
-| Vector Store | FAISS / ChromaDB |
-| PDF Processing | PyPDF2 / pdfplumber |
-| Deployment | (Optional) Vercel / Render / Docker |
+| AI / NLP | Hugging Face  |
+| Vector Store | FAISS |
+| PDF Processing | PyPDF|
+| Deployment | Render |
 
 ---
 
-##  Project Structure
 
