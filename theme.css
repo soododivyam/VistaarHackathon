@@ -38,4 +38,43 @@ body.dark-mode {
   --chat-input-bg: #3c3c3c;
 }
 
+/* --- Apply Variables to Elements (Step 1) --- */
+body {
+  background-color: var(--page-bg);
+  color: var(--page-text);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.toolbar {
+  background-color: var(--toolbar-bg);
+  color: var(--toolbar-text);
+}
+
+button {
+  background-color: var(--button-bg);
+  color: var(--toolbar-text);
+  border: none;
+  padding: 0.5em 1em;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: var(--button-hover-bg);
+}
+
+.pdf-container {
+  background-color: var(--canvas-bg);
+  border: 1px solid var(--canvas-border);
+}
+
+#chat-window {
+  background-color: var(--chat-window-bg);
+  color: var(--chat-header-text);
+}
+
+/* Optional smooth transition for all elements */
+body, .toolbar, button, #chat-window, .pdf-container {
+  transition: background-color 0.3s, color 0.3s;
+}
+
 
