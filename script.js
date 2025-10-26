@@ -30,21 +30,27 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Handle "Previous" button
-  document.getElementById("prev").addEventListener("click", () => {
+ // Handle "Previous" button
+document.getElementById("prev").addEventListener("click", () => {
     PDFViewer.prevPage();
-  });
-
-  // Handle "Next" button
-  document.getElementById("next").addEventListener("click", () => {
-    PDFViewer.nextPage();
-  });
-
-  // Handle "Toggle PDF Mode" button
-  document.getElementById("pdf-dark-mode-toggle").addEventListener("click", () => {
-      PDFViewer.toggleDarkMode();
-    }
-  );
 });
 
+// Handle "Next" button
+document.getElementById("next").addEventListener("click", () => {
+    PDFViewer.nextPage();
+});
 
+// Handle "Toggle PDF Mode" button
+document.getElementById("pdf-dark-mode-toggle").addEventListener("click", () => {
+    PDFViewer.toggleDarkMode();
+});
+
+// Handle Zoom buttons
+document.getElementById("zoom-in").addEventListener("click", () => {
+    PDFViewer.zoomIn();
+});
+
+document.getElementById("zoom-out").addEventListener("click", () => {
+    PDFViewer.zoomOut();
+});
+});

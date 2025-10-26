@@ -101,33 +101,45 @@ const PDFViewer = {
    * Renders a specific page number with both canvas and text layer.
    * @param {number} num - The page number to render.
    */
-  renderPage(num) {
+renderPage(num) {
     if (!this.pdfDoc) return;
 
-    // Get the page
+    this.pageNum = num; // make sure PDFViewer.pageNum is updated
+
+    // --- Clear previous canvas ---
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    // --- Remove previous text layer ---
+    if (this.textLayerDiv) {
+        this.viewportWrapper.removeChild(this.textLayerDiv);
+        this.textLayerDiv = null;
+    }
+
+    // --- Get the page ---
     this.pdfDoc.getPage(num).then((page) => {
-      const viewport = page.getViewport({ scale: this.scale });
+        const viewport = page.getViewport({ scale: this.scale });
 
-      // --- 1. Render Canvas ---
-      this.canvas.height = viewport.height;
-      this.canvas.width = viewport.width;
+        this.canvas.height = viewport.height;
+        this.canvas.width = viewport.width;
 
-      const renderContext = {
-        canvasContext: this.ctx,
-        viewport: viewport,
-      };
+        const renderContext = {
+            canvasContext: this.ctx,
+            viewport: viewport,
+        };
 
-      const renderTask = page.render(renderContext);
+        // Render the canvas
+        const renderTask = page.render(renderContext);
 
-      // --- 2. Render selectable text layer using textlayer.js ---
-      renderTask.promise.then(() => {
-        renderTextLayer(page, this.viewportWrapper, this.canvas, this.scale);
-      });
+        // Render text layer **after canvas rendering completes**
+        renderTask.promise.then(() => {
+            // This assumes renderTextLayer returns the created div
+            this.textLayerDiv = renderTextLayer(page, this.viewportWrapper, this.canvas, this.scale);
+        });
 
-      // Update page counter
-      this.pageCounter.textContent = num;
+        // Update page counter
+        this.pageCounter.textContent = num;
     });
-  },
+},
 
   /**
    * Go to the previous page.
@@ -153,6 +165,24 @@ const PDFViewer = {
   toggleDarkMode() {
     this.viewportWrapper.classList.toggle("pdf-dark-mode");
   },
+
+  /**
+   * Zoom in by increasing the scale
+   */
+  zoomIn() {
+    this.scale += 0.2; // increase scale by 0.2
+    this.renderPage(this.pageNum);
+  },
+
+  /**
+   * Zoom out by decreasing the scale
+   */
+  zoomOut() {
+    if (this.scale <= 0.4) return; // minimum zoom
+    this.scale -= 0.2; // decrease scale by 0.2
+    this.renderPage(this.pageNum);
+  },
+
 
   // --- New Methods for Context Menu ---
 
