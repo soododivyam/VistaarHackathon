@@ -93,7 +93,7 @@ def upload_pdf():
 # Load LLM
 llm = HuggingFaceEndpoint(
     repo_id="mistralai/Mistral-7B-Instruct-v0.3",
-    max_new_tokens=30,
+    max_new_tokens=150,
     task="text-generation",
 )
 
@@ -170,3 +170,4 @@ def ask():
 if __name__ == "__main__":
     print("Starting Flask AI server on http://127.0.0.1:5000")
     app.run(port=5000, debug=True, use_reloader=False)
+
