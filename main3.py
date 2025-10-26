@@ -7,7 +7,7 @@ from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import PromptTemplate,MessagesPlaceholder
 from audio import speaker
 # ✅ 1. Setup your Hugging Face API key
-os.environ["HUGGINGFACEHUB_API_TOKEN"] = "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"  # put your own key
+os.environ["HUGGINGFACEHUB_API_TOKEN"] = ""  # put your own key
 
 # ✅ 2. Load PDF
 pdf_path = r"C:\Users\Shaurya Varshney\Desktop\pdf_reader\Notes 4-6 (2).pdf"
