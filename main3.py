@@ -10,7 +10,7 @@ from audio import speaker
 os.environ["HUGGINGFACEHUB_API_TOKEN"] = ""  # put your own key
 
 # ✅ 2. Load PDF
-pdf_path = r"C:\Users\Shaurya Varshney\Desktop\pdf_reader\Notes 4-6 (2).pdf"
+pdf_path = r""
 
 if not os.path.exists(pdf_path):
     raise FileNotFoundError("PDF file not found at: " + pdf_path)
