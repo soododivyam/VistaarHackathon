@@ -1,11 +1,9 @@
 /**
  * chat.js
  *
- * This file contains all the logic for the chat widget
- * and the main UI (body) dark mode toggle.
+ * Handles the chat widget logic and the main UI dark mode toggle.
  */
 
-// Create a global Chat object to expose its methods
 const Chat = {
   // --- Properties ---
   chatToggle: null,
@@ -16,10 +14,10 @@ const Chat = {
   chatSend: null,
 
   /**
-   * Initializes the Chat object, finds elements, and attaches listeners.
+   * Initializes the Chat widget.
    */
   init() {
-    // --- Chat Widget Elements ---
+    // --- Find elements ---
     this.chatToggle = document.getElementById("chat-toggle");
     this.chatWindow = document.getElementById("chat-window");
     this.chatClose = document.getElementById("chat-close");
@@ -27,7 +25,7 @@ const Chat = {
     this.chatInput = document.getElementById("chat-input");
     this.chatSend = document.getElementById("chat-send");
 
-    // Safety check in case elements don't exist
+    // Safety check
     if (
       !this.chatToggle ||
       !this.chatWindow ||
@@ -36,15 +34,11 @@ const Chat = {
       !this.chatInput ||
       !this.chatSend
     ) {
-      console.warn(
-        "Chat elements not found. Chat widget will not be initialized."
-      );
+      console.warn("⚠️ Chat elements not found. Chat widget not initialized.");
       return;
     }
 
     // --- Attach Event Listeners ---
-
-    // Open/Close chat window
     this.chatToggle.addEventListener("click", () => {
       this.chatWindow.classList.toggle("chat-open");
     });
@@ -53,13 +47,9 @@ const Chat = {
       this.chatWindow.classList.remove("chat-open");
     });
 
-    // Event listeners for sending
     this.chatSend.addEventListener("click", () => this.sendMessage());
-    
     this.chatInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
-        this.sendMessage();
-      }
+      if (e.key === "Enter") this.sendMessage();
     });
   },
 
@@ -70,25 +60,22 @@ const Chat = {
     const messageText = this.chatInput.value.trim();
     if (messageText === "") return;
 
-    // Add user message to chat body
+    // Add user message
     this.addMessage(messageText, "user");
 
     // Clear input
     this.chatInput.value = "";
 
-    // Get bot response
-    this.getBotResponse(messageText, null); // Pass null for context
+    // Fetch bot response
+    this.getBotResponse(messageText, null);
   },
 
   /**
    * Adds a message to the chat body.
-   * @param {string} text - The message text.
-   * @param {string} sender - 'user', 'bot', or 'context-message'.
    */
   addMessage(text, sender) {
     const messageEl = document.createElement("div");
     messageEl.classList.add("chat-message", sender);
-    // Use textContent to prevent XSS
     messageEl.textContent = text;
     this.chatBody.appendChild(messageEl);
 
@@ -97,52 +84,60 @@ const Chat = {
   },
 
   /**
-   * NEW: Public method to send a message *with* context from the PDF.
-   * @param {string} context - The selected text from the PDF.
-   * @param {string} prompt - The prompt (e.g., "Explain this:").
+   * Send a message with context (used for PDF integration).
    */
   sendMessageWithContext(context, prompt) {
-    // 1. Open the chat window
     this.chatWindow.classList.add("chat-open");
-
-    // 2. Add the context as a special message
     this.addMessage(`Context: "${context}"`, "context-message");
-
-    // 3. Add the user's prompt
     this.addMessage(prompt, "user");
-
-    // 4. Get the bot response
-    // In a real app, you'd send both 'context' and 'prompt' to the LLM
     this.getBotResponse(prompt, context);
   },
 
   /**
-   * Simulates a bot response.
-   * Modified to understand context.
-   * @param {string} prompt - The user's prompt.
-   * @param {string | null} context - The selected text (if any).
+   * Get bot response from Flask backend.
    */
-  getBotResponse(prompt, context = null) {
-    let responseText = "This is a dummy response. The API is not connected yet.";
+  async getBotResponse(prompt, context = null) {
+    try {
+      // Add temporary "Thinking..." message
+      const tempMessage = document.createElement("div");
+      tempMessage.classList.add("chat-message", "bot");
+      tempMessage.textContent = "Thinking my friend...";
+      this.chatBody.appendChild(tempMessage);
+      this.chatBody.scrollTop = this.chatBody.scrollHeight;
 
-    if (context) {
-      // Create a specific response if context is provided
-      responseText = `Dummy response for "${prompt}" regarding the text: "${context.substring(0, 50)}..."`;
-    } else {
-      // Standard response
-      responseText = `Dummy response for: "${prompt}"`;
+      // Send POST request to backend
+      const response = await fetch("http://127.0.0.1:5000/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, context }),
+      });
+
+      console.log("Prompt that I sent was:", prompt);
+      console.log("Context that I sent was:", context);
+      const data = await response.json();
+      console.log("Raw Flask response:", data);
+
+      // Remove "Thinking..." message
+      tempMessage.remove();
+
+      // Add real bot response
+      this.addMessage(data.response || "No response from backend.", "bot");
+    } catch (error) {
+      console.error("Error getting bot response:", error);
+
+      // Remove "Thinking..." message if it exists
+      const bots = this.chatBody.querySelectorAll(".bot");
+      if (bots.length > 0) bots[bots.length - 1].remove();
+
+      // Show fallback message
+      this.addMessage("Error connecting to Python backend.", "bot");
     }
-
-    setTimeout(() => {
-      this.addMessage(responseText, "bot");
-    }, 1000); // 1-second delay
   },
 };
 
-// --- Main DOMContentLoaded Listener ---
+// --- Initialize on DOM load ---
 document.addEventListener("DOMContentLoaded", () => {
   // --- Main UI Dark Mode Toggle ---
-  // This is separate from the chat, so it stays here.
   const darkModeToggle = document.getElementById("dark-mode-toggle");
   if (darkModeToggle) {
     darkModeToggle.addEventListener("click", () => {
